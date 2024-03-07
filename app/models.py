@@ -8,7 +8,7 @@ class UserProfile(db.Model):
     # user_profile (singular) table, but if we specify __tablename__ we can change it
     # to `user_profiles` (plural) or some other name.
     def  __init__(self,id,firstname,lastname,username,password):
-        self.id=id
+        
         self.first_name=firstname
         self.last_name=lastname
         self.username=username
