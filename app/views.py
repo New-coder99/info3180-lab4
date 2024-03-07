@@ -1,12 +1,13 @@
 import os
 from app import app, db, login_manager
-from flask import render_template, request, redirect, url_for, flash, session, abort
+from flask import render_template, request, redirect, url_for, flash, session, abort,send_from_directory
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash,check_password_hash
 from app.models import UserProfile
 from app.forms import LoginForm
 from .forms import UploadForm
+
 
 
 ###
@@ -111,6 +112,41 @@ def send_text_file(file_name):
     return app.send_static_file(file_dot_text)
 
 
+
+UPLOAD_FOLDER = 'uploads'  # Your upload folder path
+
+
+def get_uploaded_images():
+    images = []
+    rootdir = os.path.join(os.getcwd(), UPLOAD_FOLDER)
+    for subdir, dirs, files in os.walk(rootdir):
+        for file in files:
+            images.append(file)
+    return images
+
+
+@app.route('/uploads/<filename>')
+def get_image(filename):
+    return send_from_directory(os.path.join(os.getcwd(), UPLOAD_FOLDER), filename)
+
+# Example usage:
+@app.route('/show_images')
+def show_images():
+    # Get the list of uploaded image filenames
+    images = get_uploaded_images()
+    return render_template('images.html', images=images)
+
+def files():
+    # Get the list of uploaded image filenames
+    filenames = get_uploaded_images()
+    return render_template('files.html', filenames=filenames)
+    
+@app.route('/files')
+def files():
+    # Get the list of uploaded image filenames
+    filenames = get_uploaded_images()
+    return render_template('files.html', filenames=filenames)
+
 @app.after_request
 def add_header(response):
     """
@@ -121,6 +157,13 @@ def add_header(response):
     response.headers['Cache-Control'] = 'public, max-age=0'
     return response
 
+@app.route("/logout")
+@login_required
+def logout():
+    
+    logout_user()
+    flash('You have been logged out.', 'success')
+    return redirect(url_for('home'))
 
 @app.errorhandler(404)
 def page_not_found(error):
